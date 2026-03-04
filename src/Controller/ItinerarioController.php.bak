@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Controller;
+
+use App\Repository\PasajeroRepository;
+use App\Repository\ViajeRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+
+use App\Repository\ItinerarioRepository;
+
+class ItinerarioController extends AbstractController
+{
+    #[Route('/itinerario', name: 'itinerario')]
+
+    private $itinerarioRepository;
+
+    public function __construct(ItinerarioRepository $itinerarioRepository)
+    {
+        $this->itinerarioRepository = $itinerarioRepository;
+    }
+    public function index(): Response
+    {
+        return $this->json([
+            'message' => 'Welcome to your new controller!',
+            'path' => 'src/Controller/ItinerarioController.php',
+        ]);
+    }
+
+    /**
+     * @Route("/itinerario/get-itinerarios", name="get-itinerarios", methods={"GET"})
+     */
+    public function getViajesList()
+    {
+        $itinerarios = $this->itinerarioRepository->createQueryBuilder('i')
+            ->select(
+                'i.id, 
+                i.Nombre
+                ')
+            ->orderBy('i.Nombre')
+            ->getQuery()
+            ->getResult();
+
+        return new JsonResponse(['status' => 'success', 'code' => 200, 'message' => '', 'data' => $itinerarios], 200);
+    }
+
+    /**
+     * @Route("/itinerario/get-itinerarios-by-viaje", name="get-itinerarios-by-viaje", methods={"POST"})
+     */
+    public function getItinerariosByViaje(Request $request, ViajeRepository $viajeRepository)
+    {
+        $data = json_decode($request->getContent(), true);
+        $viajeId = (isset($data['viaje'])) ? $data['viaje'] : null;
+
+
+        $viaje = $viajeRepository->findOneBy(
+                    array('id' => $viajeId)
+                );
+
+        $itinerarios = $this->itinerarioRepository->createQueryBuilder('i')
+            ->select(
+                'i.id, 
+                i.Nombre
+                '
+            )
+            ->where('i.Viaje = :v')
+            ->setParameter('v', $viaje)
+            ->orderBy('i.Nombre')
+            ->getQuery()
+            ->getResult();                        
+
+        return new JsonResponse(['status' => 'success', 'code' => 200, 'message' => '', 'data' => $itinerarios], 200);
+    }
+
+    /**
+     * @Route("/itinerario/get-itinerario-by-pasajero", name="get-itinerarios-by-pasajero", methods={"POST"})
+     */
+   /* public function getItinerariosByPasajero(Request $request, PasajeroRepository $pasajeroRepository)
+    {
+        $data = json_decode($request->getContent(), true);
+        $pasajeroId = (isset($data['pasajero'])) ? $data['pasajero'] : null;
+
+
+        $pasajero = $pasajeroRepository->findOneBy(
+                    array('id' => $pasajeroId)
+                );
+
+      // EN ESTE CASO SOLO TRAE UN ITINERARIO ( PASAJERO - ITINERARIO 1:1 )          
+        $itinerario = $this->itinerarioRepository->createQueryBuilder('i')
+            ->select(
+                'i.id, 
+                i.Nombre,
+                i.Precio,
+                i.FechaInicio,
+                i.FechaFin,
+                v.id as idViaje 
+                '
+            )
+            ->leftJoin('i.Viaje', 'v')
+            ->where('i.Pasajero = :pas')
+            ->setParameter('pas', $pasajero)
+            ->orderBy('i.Nombre')
+            ->getQuery()
+            ->getResult();                        
+
+        return new JsonResponse(['status' => 'success', 'code' => 200, 'message' => '', 'data' => $itinerario], 200);
+    }*/
+
+
+}

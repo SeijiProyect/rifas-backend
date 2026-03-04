@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+
+use App\Repository\ViajeRepository;
+
+class ViajeController extends AbstractController
+{
+    #[Route('/viaje', name: 'viaje')]
+    public function index(): Response
+    {
+        return $this->json([
+            'message' => 'Welcome to your new controller!',
+            'path' => 'src/Controller/ViajeController.php',
+        ]);
+    }
+
+/**
+     * @Route("api/viaje/get-list-by-persona", name="list-viajes-by-persona", methods={"POST"})
+     */
+    public function getPersonaDatos(Request $request, ViajeRepository $viajeRepository)
+    {
+
+        $data = json_decode($request->getContent(), true);
+        $id = (isset($data['idPersona'])) ? $data['idPersona'] : null;
+
+        if ($id != null) {
+
+            $viajes = $viajeRepository->viajesByPersonaNativeQuery($id);
+            if ($viajes) {
+
+               /* $res = array(
+                    'id' => $persona->getId(),
+                    'nombres' => $persona->getNombres(),
+                    'apellidos' => $persona->getApellidos(),
+                    'fecha_nac' => $persona->getFechaNacimiento(),
+                    'direccion' => $persona->getDireccion(),
+                    'cedula' => $persona->getCedula(),
+                    'celular' => $persona->getCelular(),
+                    'sexo' => $persona->getSexo(),
+                    'email' => $persona->getUser()->getEmail()
+                );*/
+
+                return new JsonResponse(['status' => 'success', 'code' => 200, 'message' => 'Persona encontrado', 'data' => $viajes], 200);
+            } else {
+
+                return new JsonResponse(['status' => 'error', 'code' => 400, 'message' => 'La persona no existe.'], 400);
+            }
+        } else {
+            return new JsonResponse(['status' => 'error', 'code' => 400, 'message' => 'Parámetros no válidos o incompletos.'], 400);
+        }
+    }
+
+}

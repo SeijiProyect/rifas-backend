@@ -1,0 +1,435 @@
+<?php
+
+namespace App\Repository;
+
+use DateTimeImmutable;
+use App\Entity\Pasajero;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\Query;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+
+use App\Repository\UserRepository;
+use Symfony\Component\DependencyInjection\Parameter;
+
+/**
+ * @method Pasajero|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Pasajero|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Pasajero[]    findAll()
+ * @method Pasajero[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
+class PasajeroRepository extends ServiceEntityRepository
+{
+    private $userRepository;
+    private $pasajeroRepository;
+    private $manager;
+
+    public function __construct(ManagerRegistry $registry, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    {
+        parent::__construct($registry, Pasajero::class);
+        $this->manager = $entityManager;
+        $this->userRepository = $userRepository;
+    }
+
+    // /**
+    //  * @return Pasajero[] Returns an array of Pasajero objects
+    //  */
+    /*
+    public function findByExampleField($value)
+    {
+    return $this->createQueryBuilder('p')
+    ->andWhere('p.exampleField = :val')
+    ->setParameter('val', $value)
+    ->orderBy('p.id', 'ASC')
+    ->setMaxResults(10)
+    ->getQuery()
+    ->getResult()
+    ;
+    }
+    */
+
+    /*
+    public function findOneBySomeField($value): ?Pasajero
+    {
+    return $this->createQueryBuilder('p')
+    ->andWhere('p.exampleField = :val')
+    ->setParameter('val', $value)
+    ->getQuery()
+    ->getOneOrNullResult()
+    ;
+    }
+    */
+
+    public function save(Pasajero $pasajero)
+    {
+        $dateAux = date('Y-m-d H:i:s');
+        $date_fecha_actual = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateAux);
+        $new_pasajero = new Pasajero();
+        $new_pasajero
+            ->setPersona($pasajero->getPersona())
+            ->setItinerario($pasajero->getItinerario())
+            ->setUniversidad($pasajero->getUniversidad())
+            ->setEstado('A')
+            ->setComentarios($pasajero->getComentarios())
+            ->setCreatedAt($date_fecha_actual);
+
+        $this->manager->persist($new_pasajero);
+        $this->manager->flush();
+
+        return $new_pasajero;
+    }
+
+    public function update(Pasajero $pasajero)
+    {
+        $this->manager->persist($pasajero);
+        $this->manager->flush();
+        return $pasajero;
+    }
+
+    public function findByPersonaItinerario($persona)
+    {
+        return $this->createQueryBuilder('f')
+            ->select('t.id')
+            ->leftJoin('f.Itinerario', 't')
+            ->where('f.Persona = :val')
+            ->setParameter('val', $persona)
+            ->orderBy('f.CreatedAt', 'DESC') // Ordenar por fecha descendente
+            ->setMaxResults(1) // Limitar el resultado a uno solo
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function getPasajeroByToken(string $token)
+    {
+        $user = $this->userRepository->getUserIdByToken($token);
+
+        if ($user->getPersona()) {
+
+            $persona = $user->getPersona();
+
+            $pasajero = $this->findOneBy(
+                array(
+                    "Persona" => $persona
+                ),
+                array('id' => 'DESC')
+            );
+
+            if ($pasajero) {
+                return $pasajero;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public function getPasajeroActivoByPersona($persona)
+    {
+        $pasajero = $this->findBy(array("Persona" => $persona), array('id' => 'DESC'), 1, 0);
+
+        if ($pasajero) {
+            return $pasajero;
+        } else {
+            return null;
+        }
+    }
+
+    public function pasajerosNativeQuery()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = 'SELECT p.id AS persona_id, pas.id AS pasajero_id, p.nombres, p.apellidos, u.email,
+        iti.precio AS precio_itinerario, iti.nombre AS itinerario_nombre
+        FROM pasajero pas 
+        INNER JOIN persona p ON p.id = pas.persona_id
+        INNER JOIN user u ON u.persona_id = p.id   
+        INNER JOIN itinerario iti ON iti.id = pas.itinerario_id
+        GROUP BY pas.id
+        ORDER BY p.apellidos';
+
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+        return $resultSet->fetchAllAssociative();
+    }
+
+
+    /*public function pasajerosNativeQuery()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = 'SELECT p.id AS persona_id, pas.id AS pasajero_id, p.nombres, p.apellidos, u.email, SUM(d.monto) AS deposito_total, 
+        ce.monto AS extras_total, iti.precio AS precio_itinerario, iti.nombre AS itinerario_nombre
+        FROM pasajero pas 
+        INNER JOIN persona p ON p.id = pas.persona_id
+        INNER JOIN user u ON u.persona_id = p.id   
+        INNER JOIN costo_extra AS ce ON ce.pasajero_id = pas.id
+        INNER JOIN itinerario iti ON iti.id = pas.itinerario_id
+        INNER JOIN deposito d ON d.pasajero_id = pas.id 
+        GROUP BY pas.id
+        ORDER BY p.apellidos';
+
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+        return $resultSet->fetchAllAssociative();
+    }*/
+
+    public function pasajerosByFilter($desde, $limit, $termino, $estado, $idViaje)
+    {
+        /*return $this->createQueryBuilder('pas')
+        ->where('pas.id = :termEqual OR per.Id = :termEqual OR per.Apellidos LIKE :term OR per.Nombres LIKE :term')
+        ->leftJoin('pas.Persona', 'per')
+        ->leftJoin('pas.Itinerario', 'iti')
+        ->setParameter('term', '%' . $termino . '%')
+        ->setParameter('termEqual', $termino)
+        ->orderBy('pas.id', 'ASC')
+        ->getQuery()
+        ->getResult();*/
+
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                'pas.id as pasajero_id, 
+            pas.Estado as PasajeroEstado,
+
+            per.id as persona_id, 
+            per.Nombres as nombres, 
+            per.Apellidos as apellidos,
+          
+            i.Nombre as itinerario_nombre,
+            
+            v.id as ViajeId,
+            v.Nombre as ViajeNombre      
+            '
+            )
+            ->leftJoin('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->orderBy('pas.id')
+            //->getQuery()
+            //->getResult();
+            ->setFirstResult($desde)
+            ->setMaxResults($limit);
+
+        // Verifico que el termino no sea nulo y el numero de caracteres sea mayor a 2
+        if ($termino != null) {
+            $pasajeros->andWhere('per.Nombres LIKE :term OR per.Apellidos LIKE :term')
+                //$pasajeros->andWhere('per.Nombres LIKE :term OR per.Apellidos LIKE :term OR i.Nombre LIKE :term OR v.Nombre LIKE :term OR per.id = :termEqual OR pas.id = :termEqual')
+                ->setParameter('term', '%' . $termino . '%');
+            // ->setParameter('termEqual', $termino);
+        }
+
+        $pasajeros = $pasajeros->getQuery()->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosByTermino($offset, $limit, $termino)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario,
+
+        v.Nombre as ViajeNombre,
+
+        pas.Estado as PasajeroEstado,
+        pas.Comentarios as PasajeroComentarios
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->andWhere('per.Nombres LIKE :term OR per.Apellidos LIKE :term OR pas.id = :termEquals')
+            ->setParameter('term', '%' . $termino . '%')
+            ->setParameter('termEquals', $termino)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosByViaje($idViaje)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario,
+
+        v.Nombre as ViajeNombre,
+
+        pas.Estado as PasajeroEstado,
+        pas.Comentarios as PasajeroComentarios
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->andWhere('v.id = :termEqual')
+            ->setParameter('termEqual', $idViaje)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosDesdeHastaByViaje($offset, $limit, $idViaje)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario,
+
+        v.Nombre as ViajeNombre,
+
+        pas.Estado as PasajeroEstado,
+        pas.Comentarios as PasajeroComentarios
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->andWhere('v.id = :termEqual')
+            ->setParameter('termEqual', $idViaje)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosByItinerario($offset, $limit, $idItinerario)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario,
+
+        v.Nombre as ViajeNombre,
+
+        pas.Estado as PasajeroEstado,
+        pas.Comentarios as PasajeroComentarios
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->andWhere('i.id = :termEqual')
+            ->setParameter('termEqual', $idItinerario)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosByDesdeHastaItinerario($offset, $limit, $idItinerario)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario,
+
+        v.Nombre as ViajeNombre,
+
+        pas.Estado as PasajeroEstado,
+        pas.Comentarios as PasajeroComentarios
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->andWhere('i.id = :termEqual')
+            ->setParameter('termEqual', $idItinerario)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+
+    public function getPasajerosListSaldos($offset, $limit)
+    {
+        $pasajeros = $this->createQueryBuilder('pas')
+            ->select(
+                '
+        pas.id as pasajero_id,
+        per.Nombres,
+        per.Apellidos,
+        per.id as persona_id,
+        per.Cedula,
+        per.Celular,
+
+        i.Nombre as itinerario_nombre,
+        i.Precio as precio_itinerario
+        '
+            )
+            ->join('pas.Persona', 'per')
+            ->leftJoin('pas.Itinerario', 'i')
+            ->leftJoin('i.Viaje', 'v')
+            ->groupBy('per.id')
+            ->orderBy('per.Apellidos')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $pasajeros;
+    }
+}

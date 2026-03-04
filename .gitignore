@@ -1,0 +1,15 @@
+
+###> symfony/framework-bundle ###
+.env
+.env.prod
+.env.local
+.env.test
+.env.dev
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+package-lock.json
+composer.lock
+###< symfony/framework-bundle ###
+#/.env.local.php

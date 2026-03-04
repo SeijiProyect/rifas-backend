@@ -1,0 +1,63 @@
+BEGIN 
+
+-- Variables donde almacenar lo que nos traemos desde el SELECT
+    DECLARE v_id_sorteo INT;
+    DECLARE v_fecha_sorteo DATE;
+    DECLARE v_numero_sorteo INT;
+    DECLARE v_valor_talon DOUBLE;
+    
+    DECLARE v_id_sorteo_1 INT;
+    DECLARE v_id_sorteo_2 INT;
+    DECLARE v_id_sorteo_3 INT;
+    DECLARE v_id_sorteo_4 INT;
+    DECLARE v_id_sorteo_5 INT;
+    DECLARE v_id_sorteo_6 INT;
+
+    DECLARE v_id_sorteo_7_extra_auto INT;
+    DECLARE v_id_sorteo_8_extra_maliva INT;
+
+-- Variable para controlar el fin del bucle
+  DECLARE fin INTEGER DEFAULT 0;
+
+-- El SELECT que vamos a ejecutar
+  DECLARE sorteos_cursor CURSOR FOR
+    SELECT id, fecha_sorteo, sorteo_numero, valor_talon FROM `sorteo`;
+
+-- Condición de salida
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET fin=1;
+
+  OPEN sorteos_cursor;
+  get_sorteos: LOOP
+    FETCH sorteos_cursor INTO v_id_sorteo, v_fecha_sorteo, v_numero_sorteo, v_valor_talon;
+    IF fin = 1 THEN
+       LEAVE get_sorteos;
+    END IF;
+
+  UPDATE talon SET talon.sorteo_id = v_id_sorteo WHERE talon.fecha_sorteo = v_fecha_sorteo AND talon.precio = v_valor_talon;
+
+  END LOOP get_sorteos;
+  CLOSE sorteos_cursor;
+  
+  -- Asigno ID sorteo a los talones viejos con fecha de sorteo distintas (talones viejos)
+    SET v_id_sorteo_1 = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2022-08-26');
+    SET v_id_sorteo_2 = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2022-09-30');
+    SET v_id_sorteo_3= (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2022-10-26');
+    SET v_id_sorteo_4 = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2022-11-25');
+    SET v_id_sorteo_5 = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2022-12-23');
+    SET v_id_sorteo_6 = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2023-08-24');
+
+    SET v_id_sorteo_7_extra_auto = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2023-09-29' AND sorteo.numero_inicial_talon = 25000);
+    SET v_id_sorteo_8_extra_maliva = (SELECT sorteo.id FROM `sorteo` WHERE sorteo.fecha_sorteo = '2023-09-29' AND sorteo.numero_inicial_talon = 26000);
+
+    
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_1 WHERE talon.fecha_sorteo = '2022-08-24';
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_2 WHERE talon.fecha_sorteo = '2022-09-26';
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_3 WHERE talon.fecha_sorteo = '2022-10-28';
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_4 WHERE talon.fecha_sorteo = '2022-11-26';
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_5 WHERE talon.fecha_sorteo = '2022-12-26';
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_6 WHERE talon.fecha_sorteo = '2023-08-26';
+
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_7_extra_auto WHERE talon.fecha_sorteo = '2023-09-29' AND talon.numero >= 25000 AND talon.numero < 26000 AND talon.precio = 100;
+    UPDATE talon SET talon.sorteo_id = v_id_sorteo_8_extra_maliva WHERE talon.fecha_sorteo = '2023-09-29' AND talon.numero >= 26000 AND talon.numero < 27000 AND talon.precio = 100;
+
+END

@@ -1,0 +1,61 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    jwt_secret: dtytrifas2022tokenPasss
+    
+    business: dtyt
+    businessNameShort: de Toque y Toque
+    businessName: de Toque y Toque - Universidades
+    talonType: multi
+    cantidadTalones: 5
+    saveCompradorEmail: true
+    saveCompradorCelular: true
+    saveCompradorDepartamento: true
+    moneda: 'USD'
+    fromAddress: seijitsumura1985@gmail.com
+    manualUrl: https://toqueytoque.com/ManualRifas_Comprador.pdf
+
+    # business: ccee
+    # businessNameShort: CCEE GV 2023
+    # businessName: CCEE GV 2023
+    # talonType: single
+    # cantidadTalones: 1
+    # saveCompradorEmail: false
+    # saveCompradorCelular: false
+    # saveCompradorDepartamento: false
+    # moneda: '$'
+    # fromAddress: seijitsumura1985@gmail.com
+    # manualUrl: https://dev.rifasgv23.com/assets/docs/ManualRifas_Comprador.pdf
+
+services:
+    #Symfony\Component\Dotenv\Command\DotenvDumpCommand: ~
+    #Symfony\Component\Dotenv\Command\DotenvDumpCommand:
+    #    - '%kernel.project_dir%/.env'
+    #    - '%kernel.environment%'
+
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']

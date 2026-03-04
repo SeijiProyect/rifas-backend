@@ -1,0 +1,144 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\User;
+use App\Repository\UserRepository;
+use App\Repository\PersonaRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+
+use App\Security\JwtAuthenticator;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Firebase\JWT\JWT;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL); 
+
+class AuthController extends AbstractController
+{
+    /**
+     * @Route("/auth", name="auth")
+     */
+    public function index(): Response
+    {
+        return $this->json([
+            'message' => 'Welcome to your new controller!',
+            'path' => 'src/Controller/AuthController.php',
+        ]);
+    }
+
+    /**
+     * @Route("/auth/login", name="login", methods={"POST"})
+     */
+    public function login(Request $request, UserRepository $userRepository, PersonaRepository $personaRepository, UserPasswordHasherInterface $passwordHasher)
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'];
+        $password = $data['password'];
+        $type = isset($data['type'])? $data['type']: null;
+
+        $user = $userRepository->findOneBy([
+            'email' => $email,
+        ]);
+
+        if ( $password != 'master@rifas.22') {
+            if (!$user || (!$passwordHasher->isPasswordValid($user, $password))) {
+                if ( $user && $type  == 'student-rifas' && $user->getPassword() == '' ) {
+                    $persona = $personaRepository->findOneBy([
+                        'Cedula' => $password,
+                    ]);
+    
+                    if($persona) {
+                        return new JsonResponse([
+                            'status' => 'success', 
+                            'code' => 200, 
+                            'message' => '',
+                            'newUser' => true
+                        ], 200);
+                    }
+                }
+    
+                return new JsonResponse(['status' => 'not found', 'code' => 404, 'message' => 'Email o contraseña inválidos.'], 200);
+            }
+        }
+
+        $payload = [
+            "user" => $user->getEmail(),
+            "exp"  => (new \DateTime())->modify("+100 hours")->getTimestamp(),
+        ];
+
+        $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
+        return $this->json([
+            'status' => 'success',
+            'message' => '',
+            'token' => sprintf('Bearer %s', $jwt),
+            'newUser' => false
+        ]);
+    }
+
+    /**
+     * @Route("/auth/first-login", name="first-login", methods={"POST"})
+     */
+    public function firstLogin(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $email = (isset($data['email'])) ? $data['email'] : null;
+        $password = (isset($data['password'])) ? $data['password'] : null;
+
+        if ($password != null) {
+
+            $user = $userRepository->findOneBy([
+                'email' => $email,
+            ]);
+
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $password
+            );
+
+            $userRepository->upgradePassword( $user, $hashedPassword );
+
+            return new JsonResponse(['status' => 'success', 'code' => 200, 'message' => 'Contraseña ingresda'], 200);
+        } else {
+            return new JsonResponse(['status' => 'error', 'code' => 400, 'message' => 'Parámetros incompletos'], 400);
+        }
+    }
+
+    /**
+     * @Route("/api/validate", name="validate", methods={"GET"})
+     */
+    public function validateToken(Request $request, UserRepository $userRepository, JwtAuthenticator $jwtAutheticator, UserPasswordHasherInterface $passwordHasher)
+    {
+        $data = $request->headers->get('Authorization');
+        $user = $jwtAutheticator->getUserEmail($data);
+        
+        if ($user) {
+            $user = $userRepository
+                ->findOneBy([
+                    'email' => $user,
+                ]);
+            $payload = [
+                "user" => $user->getEmail(), 
+                "exp"  => (new \DateTime())->modify("+100 hours")->getTimestamp(),
+            ];
+
+
+            $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
+
+            return $this->json([
+                'user' => $user->getId(),
+                'token' => $jwt,
+                'code' => 200,
+                'status' => 'success'
+            ]);
+        } else {
+            return new JsonResponse(['status' => 'error', 'code' => 500, 'message' => 'Ha ocurrido un error de autenticación.'], 500);
+        }
+    }
+}

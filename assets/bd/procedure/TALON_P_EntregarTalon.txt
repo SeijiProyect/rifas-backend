@@ -1,0 +1,21 @@
+BEGIN 
+    DECLARE valor_talon INT;
+    DECLARE porcentaje_recaudacion DOUBLE;
+    DECLARE recaudacion_talon DOUBLE;
+    DECLARE fecha_sorteo DATE;
+    DECLARE numero_sorteo INT;
+    
+    SET @numero = desde;
+    
+    SET numero_sorteo = (SELECT sorteo.sorteo_numero FROM sorteo WHERE sorteo.id = idSorteo);
+    SET fecha_sorteo = (SELECT sorteo.fecha_sorteo FROM sorteo WHERE sorteo.id = idSorteo);
+    SET valor_talon = (SELECT sorteo.valor_talon FROM sorteo WHERE sorteo.id = idSorteo);
+    SET porcentaje_recaudacion = (SELECT sorteo.porcentaje_premio FROM sorteo WHERE sorteo.id = idSorteo);
+    SET recaudacion_talon = valor_talon - valor_talon * porcentaje_recaudacion;
+    
+    WHILE @numero <= hasta DO
+    	INSERT INTO talon(talon.sorteo_id, talon.fecha_sorteo, talon.fecha_entrega, talon.sorteo_numero, talon.estado, talon.pasajero_id, talon.numero, talon.precio, talon.valor, talon.recaudacion, talon.created_at) 
+        VALUES (idSorteo, fecha_sorteo, NOW(), numero_sorteo, "Pendiente de Pago", idPasajero, @numero, valor_talon, valor_talon, recaudacion_talon, NOW());
+    	SET @numero = @numero + 1;
+    END WHILE;  
+END
