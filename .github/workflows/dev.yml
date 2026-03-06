@@ -31,7 +31,7 @@ jobs:
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
-        server: ftp.detoqueytoque.com
+        server: ftp.api-rifas.ct.ws
         username: dtytdevsrv
         password: qM4^%X8_/Sh-F'~5(?
         protocol: ftp
