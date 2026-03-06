@@ -32,6 +32,15 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - uses: SamKirkland/FTP-Deploy-Action@4.3.2
+      with:
+        server: ftpupload.net
+        username: if0_41246838
+        password: JnSt0MGYoN7oLmx
+        protocol: ftp
+        server-dir: api-rifas.ct.ws/
+        timeout: 60000
+
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
