@@ -44,12 +44,7 @@
             "*": "dist"
         },
         "sort-packages": true,
-        "audit": {
-            "ignore": [
-                "PKSA-y2cr-5h3j-g3ys",
-                "PKSA-2kqm-ps5x-s4f5"
-            ]
-        },
+
         "autoload": {
             "psr-4": {
                 "App\\": "src/"
@@ -87,5 +82,12 @@
                 "allow-contrib": false,
                 "require": "5.4.*"
             }
+        },
+        "audit": {
+            "ignore": [
+                "PKSA-y2cr-5h3j-g3ys",
+                "PKSA-2kqm-ps5x-s4f5"
+            ]
         }
     }
+}
