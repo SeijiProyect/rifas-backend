@@ -43,44 +43,49 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "App\\Tests\\": "tests/"
-        }
-    },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php72": "*"
-    },
-    "scripts": {
-        "auto-scripts": {
-            "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd",
-            "requirements-checker": "script"
+        "sort-packages": true,
+        "audit": {
+            "ignore": [
+                "PKSA-y2cr-5h3j-g3ys",
+                "PKSA-2kqm-ps5x-s4f5"
+            ]
         },
-        "post-install-cmd": [
-            "@auto-scripts"
-        ],
-        "post-update-cmd": [
-            "@auto-scripts"
-        ]
-    },
-    "conflict": {
-        "symfony/symfony": "*",
-        "doctrine/orm": "2.12.0"
-    },
-    "extra": {
-        "symfony": {
-            "allow-contrib": false,
-            "require": "5.4.*"
+        "autoload": {
+            "psr-4": {
+                "App\\": "src/"
+            }
+        },
+        "autoload-dev": {
+            "psr-4": {
+                "App\\Tests\\": "tests/"
+            }
+        },
+        "replace": {
+            "symfony/polyfill-ctype": "*",
+            "symfony/polyfill-iconv": "*",
+            "symfony/polyfill-php72": "*"
+        },
+        "scripts": {
+            "auto-scripts": {
+                "cache:clear": "symfony-cmd",
+                "assets:install %PUBLIC_DIR%": "symfony-cmd",
+                "requirements-checker": "script"
+            },
+            "post-install-cmd": [
+                "@auto-scripts"
+            ],
+            "post-update-cmd": [
+                "@auto-scripts"
+            ]
+        },
+        "conflict": {
+            "symfony/symfony": "*",
+            "doctrine/orm": "2.12.0"
+        },
+        "extra": {
+            "symfony": {
+                "allow-contrib": false,
+                "require": "5.4.*"
+            }
         }
     }
-}
