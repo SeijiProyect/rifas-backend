@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
     - name: Install Dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-progress --block-insecure=false
     - uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
         server: ftp.api-rifas.ct.ws
