@@ -38,7 +38,7 @@ jobs:
         username: if0_41246838
         password: JnSt0MGYoN7oLmx
         protocol: ftp
-        server-dir: api-rifas.ct.ws/
+        server-dir: api-rifas.ct.ws/htdocs/
         timeout: 60000
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
