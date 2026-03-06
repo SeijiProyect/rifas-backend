@@ -31,9 +31,9 @@ jobs:
       run: composer install --prefer-dist --no-progress
     - uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
-        server: ftp.api-rifas.ct.ws
-        username: dtytdevsrv
-        password: qM4^%X8_/Sh-F'~5(?
+        server: ftpupload.net
+        username: if0_41246838
+        password: JnSt0MGYoN7oLmx
         protocol: ftp
         server-dir: api-rifas.ct.ws/
         timeout: 60000
