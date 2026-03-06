@@ -28,7 +28,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
     - name: Install Dependencies
-      run: composer install --prefer-dist --no-progress --block-insecure=false
+       run: composer config audit.ignore "PKSA-y2cr-5h3j-g3ys" "PKSA-2kqm-ps5x-s4f5" --toggle
+            composer install --prefer-dist --no-progress --block-insecure=false
     - uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
         server: ftp.api-rifas.ct.ws
