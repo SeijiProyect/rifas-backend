@@ -1,6 +1,7 @@
 <?php
 
-use App\Kernel;
+//use App\Kernel;
+use Symfony\Component\HttpKernel\Kernel;
 
 ini_set('display_errors', 1);
 
