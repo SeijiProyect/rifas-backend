@@ -1,24 +1,25 @@
-name: Deploy Prod
+name: Depoly Prod
 
 on:
   push:
     branches: [ "prod" ]
-
+  pull_request:
+    branches: [ "prod" ]
 
 permissions:
   contents: read
 
 jobs:
-  symfony-tests:
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-    #  To automatically get bug fixes and new Php versions for shivammathur/setup-php,
-    # change this to (see https://github.com/shivammathur/setup-php#bookmark-versioning):
-    # uses: shivammathur/setup-php@v2
-    - uses: shivammathur/setup-php@2cb9b829437ee246e9b3cac53555a39208ca6d28
-      with:
-        php-version: '7.4'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
     - name: Cache Composer packages
       id: composer-cache
       uses: actions/cache@v3
@@ -27,14 +28,15 @@ jobs:
         key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
           ${{ runner.os }}-php-
-    - name: Install Dependencies
-      run: composer install -q --no-dev --optimize-autoloader --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-    - uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ftpupload.net
-        username: if0_41246838
-        password: JnSt0MGYoN7oLmx
-        port: 21
-        protocol: ftp
-        server-dir: api-rifas.ct.ws/
-        timeout: 120000
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+ #   - uses: SamKirkland/FTP-Deploy-Action@4.3.2
+ #     with:
+ #       server: ftpupload.net
+ #       username: if0_41246838
+ #       password: JnSt0MGYoN7oLmx
+ #       protocol: ftp
+ #       server-dir: api-rifas.ct.ws/htdocs/
+ #       timeout: 60000

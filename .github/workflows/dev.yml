@@ -17,8 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-   # - name: Validate composer.json and composer.lock
-   #   run: composer validate --strict
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
 
     - name: Cache Composer packages
       id: composer-cache
@@ -38,7 +38,7 @@ jobs:
         username: if0_41246838
         password: JnSt0MGYoN7oLmx
         protocol: ftp
-        server-dir: api-rifas.ct.ws/htdocs/
+        server-dir: api-rifas-dev.ct.ws/htdocs/
         timeout: 60000
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
