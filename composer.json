@@ -1,4 +1,6 @@
 {
+    "name": "seiji/tsumura",
+    "description": "Api rest agencia de viajes TyT",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -12,8 +14,8 @@
         "doctrine/dbal": "^2.0",
         "doctrine/doctrine-bundle": "^2.5",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "2.11",
-        "firebase/php-jwt": "7.0",
+        "doctrine/orm": "^2.11",
+        "firebase/php-jwt": "^7.0",
         "nelmio/cors-bundle": "^2.2",
         "sensio/framework-extra-bundle": "^6.2",
         "symfony/apache-pack": "^1.0",
