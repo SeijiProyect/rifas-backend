@@ -12,4 +12,4 @@
 package-lock.json
 composer.lock
 ###< symfony/framework-bundle ###
-#/.env.local.php
+.env.local.php

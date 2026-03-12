@@ -13,13 +13,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Entity\User;
 
 class JwtAuthenticator extends AbstractGuardAuthenticator
 {
-    
+
     private $em;
     private $params;
 
@@ -55,9 +56,9 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider = null)
     {
         // if (null === $credentials) {
-            // The token header was empty, authentication fails with HTTP Status
-            // Code 401 "Unauthorized"
-            // return null;
+        // The token header was empty, authentication fails with HTTP Status
+        // Code 401 "Unauthorized"
+        // return null;
         // }
 
         // The "username" in this case is the apiToken, see the key `property`
@@ -68,18 +69,20 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
 
         try {
             $credentials = str_replace('Bearer ', '', $credentials);
+            $key =  $this->params->get('jwt_secret'); // Replace with your actual key
+            $algorithm = 'HS256';
+
             $jwt = (array) JWT::decode(
-                              $credentials, 
-                              $this->params->get('jwt_secret'),
-                              ['HS256']
-                            );
+                $credentials,
+                new Key($key, $algorithm)
+            );
 
             $return =  $this->em->getRepository(User::class)->findOneBy(array(
                 'email' => $jwt['user']
             ));
-            
-            return $return;        
-        }catch (\Exception $exception) {
+
+            return $return;
+        } catch (\Exception $exception) {
             throw new AuthenticationException($exception->getMessage());
         }
     }
@@ -88,39 +91,41 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
     {
         try {
             $credentials = str_replace('Bearer ', '', $credentials);
+            $key =  $this->params->get('jwt_secret'); // Replace with your actual key
+            $algorithm = 'HS256';
             $jwt = (array) JWT::decode(
-                              $credentials, 
-                              $this->params->get('jwt_secret'),
-                              ['HS256']
-                            );
+                $credentials,
+                new Key($key, $algorithm)
+            );
 
             $return = $jwt;
 
-            return $return;        
-        }catch (\Exception $exception) {
+            return $return;
+        } catch (\Exception $exception) {
             return $exception->getMessage();
             throw new AuthenticationException($exception->getMessage());
         }
     }
-    
+
     public function getUserEmail($credentials)
     {
         try {
             $credentials = str_replace('Bearer ', '', $credentials);
+            $key =  $this->params->get('jwt_secret'); // Replace with your actual key
+            $algorithm = 'HS256';
             $jwt = (array) JWT::decode(
-                              $credentials, 
-                              $this->params->get('jwt_secret'),
-                              ['HS256']
-                            );
+                $credentials,
+                new Key($key, $algorithm)
+            );
 
             $return = $jwt['user'];
 
-            return $return;        
-        }catch (\Exception $exception) {
+            return $return;
+        } catch (\Exception $exception) {
             throw new AuthenticationException($exception->getMessage());
         }
     }
-    
+
     public function checkCredentials($credentials, UserInterface $user)
     {
         // Check credentials - e.g. make sure the password is valid.

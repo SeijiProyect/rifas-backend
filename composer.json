@@ -36,6 +36,9 @@
     "require-dev": {
         "symfony/maker-bundle": "1.33.*"
     },
+    "require-local": {
+        "symfony/maker-bundle": "1.33.*"
+    },
     "config": {
         "allow-plugins": {
             "symfony/flex": true,
