@@ -6,7 +6,7 @@ return array (
   'APP_ENV' => 'dev',
   'APP_SECRET' => '16b53ce8e380a51434f97b676c44b85b',
   'DATABASE_URL' => 'mysql://if0_41246838:jZgctHK5qB@sql207.infinityfree.com/if0_41246838_toqueytoque_rifas_dev?serverVersion=mariadb-10.4.11',
-  'CORS_ALLOW_ORIGIN' => '^https?://(localhost|127\\.0\\.0\\.1|admin-rifas\\.ct\\.ws|user-rifas\\.ct\\.ws|formularioinscripcion\\.detoqueytoque\\.com)(:[0-9]+)?$',
+  'CORS_ALLOW_ORIGIN' => '^https?://(localhost:4200|127\\.0\\.0\\.1:4200|admin-rifas\\.ct\\.ws|user-rifas\\.ct\\.ws|formularioinscripcion\\.detoqueytoque\\.com)(:[0-9]+)?$',
   'MAILER_DSN' => 'gmail://seijitsumura1985@gmail.com:pbujncikxcyykyev@default?verify_peer=0',
   'APP_DEBUG' => 'true',
   'URL_ENV_API' => 'https://api-rifas-dev.ct.ws/',
