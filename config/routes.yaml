@@ -3,5 +3,5 @@
 #    controller: App\Controller\DefaultController::index
 admin_routes:
     resource: '../src/Controller/'
-    type: attribute
+    type: annotation
     prefix: /admin  # Esto añade /admin a todas las rutas de esa 
