@@ -30,13 +30,13 @@ jobs:
           ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --no-dev --optimize-autoloader
 
- #   - uses: SamKirkland/FTP-Deploy-Action@4.3.2
- #     with:
- #       server: ftpupload.net
- #       username: if0_41246838
- #       password: JnSt0MGYoN7oLmx
- #       protocol: ftp
- #       server-dir: api-rifas.ct.ws/htdocs/
- #       timeout: 60000
+    - uses: SamKirkland/FTP-Deploy-Action@4.3.2
+      with:
+        server: ftpupload.net
+        username: if0_41246838
+        password: JnSt0MGYoN7oLmx
+        protocol: ftp
+        server-dir: toqueytoque-rifas.ct.ws/htdocs/api/
+        timeout: 60000
