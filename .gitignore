@@ -10,6 +10,6 @@
 /var/
 /vendor/
 package-lock.json
-#composer.lock
+composer.lock
 ###< symfony/framework-bundle ###
 .env.local.php
