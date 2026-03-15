@@ -21,10 +21,6 @@ use Firebase\JWT\JWT;
 use Doctrine\ORM\EntityManagerInterface;
 use DateTimeImmutable;
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 class AuthController extends AbstractController
 {
     private $em;
@@ -46,58 +42,6 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route("/auth/tokenFree", name="tokenFree", methods={"POST"})
-     */
-    public function tokenFree(Request $request, UserRepository $userRepository)
-    {
-        $data = json_decode($request->getContent(), true);
-        $email = 'info@detoqueytoque.com';
-
-        $user = $userRepository->findOneBy([
-            'email' => $email,
-        ]);
-
-        $payload = [
-            "user" => $user->getEmail(),
-            "exp"  => (new \DateTime())->modify("+12 month")->getTimestamp(),
-        ];
-
-        $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
-        return $this->json([
-            'status' => 'success',
-            'message' => 'Free Token',
-            'token' => sprintf('Bearer %s', $jwt),
-            'newUser' => false
-        ]);
-    }
-
-    /**
-     * @Route("/auth/loginFree", name="loginFree", methods={"POST"})
-     */
-    public function loginFree(Request $request, UserRepository $userRepository)
-    {
-        $data = json_decode($request->getContent(), true);
-        $email = 'info@detoqueytoque.com';
-
-        $user = $userRepository->findOneBy([
-            'email' => $email,
-        ]);
-
-        $payload = [
-            "user" => $user->getEmail(),
-            "exp"  => (new \DateTime())->modify("+3 month")->getTimestamp(),
-        ];
-
-        $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
-        return $this->json([
-            'status' => 'success',
-            'message' => 'Free Token',
-            'token' => sprintf('Bearer %s', $jwt),
-            'newUser' => false
-        ]);
-    }
-
-    /**
      * @Route("/auth/login", name="login", methods={"POST"})
      */
     public function login(
@@ -115,8 +59,7 @@ class AuthController extends AbstractController
             'email' => $email,
         ]);
 
-        if ($password != 'master@rifas.22') {
-            if (!$user || (!$passwordHasher->isPasswordValid($user, $password))) {
+        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
                 if ($user && $type  == 'student-rifas' && $user->getPassword() == '') {
                     $persona = $personaRepository->findOneBy([
                         'Cedula' => $password,
@@ -134,7 +77,6 @@ class AuthController extends AbstractController
 
                 return new JsonResponse(['status' => 'not found', 'code' => 404, 'message' => 'Email o contraseña inválidos.'], 200);
             }
-        }
 
         $payload = [
             "user" => $user->getEmail(),

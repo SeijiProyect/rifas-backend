@@ -1,4 +1,6 @@
 {
+    "name": "seiji/tsumura",
+    "description": "Api rest agencia de viajes TyT",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -7,13 +9,13 @@
         "php": ">=7.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "composer/package-versions-deprecated": "1.11.99.4",
+        "composer/package-versions-deprecated": "^1.11.99.4",
         "doctrine/annotations": "^1.13",
         "doctrine/dbal": "^2.0",
         "doctrine/doctrine-bundle": "^2.5",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "2.11",
-        "firebase/php-jwt": "^5.5",
+        "doctrine/orm": "^2.11",
+        "firebase/php-jwt": "^7.0",
         "nelmio/cors-bundle": "^2.2",
         "sensio/framework-extra-bundle": "^6.2",
         "symfony/apache-pack": "^1.0",
@@ -44,6 +46,7 @@
             "*": "dist"
         },
         "sort-packages": true
+
     },
     "autoload": {
         "psr-4": {
@@ -57,8 +60,7 @@
     },
     "replace": {
         "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php72": "*"
+        "symfony/polyfill-iconv": "*"
     },
     "scripts": {
         "auto-scripts": {
@@ -76,7 +78,7 @@
     "conflict": {
         "symfony/symfony": "*",
         "doctrine/orm": "2.12.0"
-        },
+    },
     "extra": {
         "symfony": {
             "allow-contrib": false,

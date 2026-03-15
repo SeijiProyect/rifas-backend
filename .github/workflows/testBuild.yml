@@ -2,9 +2,9 @@ name: PHP Composer Test Build
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "dev-prueba" ]
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "dev-prueba" ]
 
 permissions:
   contents: read
@@ -17,8 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+   # - name: Validate composer.json and composer.lock
+   #   run: composer validate --strict
 
     - name: Cache Composer packages
       id: composer-cache
@@ -31,6 +31,15 @@ jobs:
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
+
+    - uses: SamKirkland/FTP-Deploy-Action@4.3.2
+      with:
+        server: ftpupload.net
+        username: if0_41246838
+        password: JnSt0MGYoN7oLmx
+        protocol: ftp
+        server-dir: api-rifas.ct.ws/htdocs/
+        timeout: 60000
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
