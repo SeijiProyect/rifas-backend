@@ -13,3 +13,11 @@ package-lock.json
 composer.lock
 ###< symfony/framework-bundle ###
 .env.local.php
+
+# Archivos creados por AI #
+cambios_backend_rifas.html
+informe_errores.html
+/rclone-v1.68.2-windows-amd64
+rclone.zip
+nul
+server.log
