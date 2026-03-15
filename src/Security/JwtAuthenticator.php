@@ -102,7 +102,6 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
 
             return $return;
         } catch (\Exception $exception) {
-            return $exception->getMessage();
             throw new AuthenticationException($exception->getMessage());
         }
     }

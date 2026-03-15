@@ -4,4 +4,4 @@
 admin_routes:
     resource: '../src/Controller/'
     type: annotation
-    prefix: /admin  # Esto añade /admin a todas las rutas de esa 
+    prefix: /api  # Esto añade /admin a todas las rutas de esa 
